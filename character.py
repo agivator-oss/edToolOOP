@@ -3,6 +3,9 @@ class Character():
         self.name = char_name
         self.description = char_description
         self.conversation = None
+        # Extension 2: new attribute for characters (simple health points)
+        # This attribute demonstrates adding a new attribute to a sample class.
+        self.hp = 100
 
     # Describe this character
     def describe(self):
@@ -19,6 +22,20 @@ class Character():
             print("[" + self.name + " says]: " + self.conversation)
         else:
             print(self.name + " doesn't want to talk to you")
+
+    # Extension 2: new method to change or report HP
+    # Demonstrates adding a method operating on a new attribute
+    def adjust_hp(self, amount):
+        self.hp += amount
+        # Keep hp within reasonable bounds
+        if self.hp < 0:
+            self.hp = 0
+        print(self.name + " now has " + str(self.hp) + " HP")
+
+    # Extension 4: polymorphic method defined on superclass
+    # Subclasses will override this to provide different interactions
+    def interact(self):
+        print(self.name + " does not react in a special way.")
 
     # Fight with this character
     def fight(self, combat_item):
@@ -50,6 +67,10 @@ class Enemy(Character):
         else:
             print(self.name + " swallows you, little wimp")
             return False
+
+    # Extension 4: override polymorphic method from Character
+    def interact(self):
+        print(self.name + " snarls and tries to intimidate you!")
         
 class Friend(Character):
     def __init__(self, char_name, char_description):
@@ -58,4 +79,8 @@ class Friend(Character):
 
     def pat(self):
         print(self.name + " pats you back!")
+
+    # Extension 4: override polymorphic method from Character
+    def interact(self):
+        print(self.name + " smiles and offers friendly help.")
 

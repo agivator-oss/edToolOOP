@@ -1,6 +1,6 @@
 from cave import Cave
 from character import Enemy, Friend
-from item import Item
+from item import Item, Weapon
 
 cavern = Cave("cavern")
 cavern.set_description("A damp and dirty cave.")
@@ -16,6 +16,26 @@ dungeon.link_cave(cavern, "north")
 grotto.link_cave(dungeon, "east")
 dungeon.link_cave(grotto, "west")
 
+# Extension 1 - Instantiation:
+# Create one new Cave, Enemy, Friend and Item to demonstrate instantiation
+crypt = Cave("crypt")
+crypt.set_description("An eerie crypt with moss-covered stones")
+grotto.link_cave(crypt, "south")
+crypt.link_cave(grotto, "north")
+
+goblin = Enemy("Goblin", "A small, sneaky cave goblin")
+goblin.set_conversation("Graaah! Leave my shiny!")
+goblin.set_weakness("sword")
+crypt.set_character(goblin)
+
+old_sage = Friend("Old Sage", "A wise old traveller")
+old_sage.set_conversation("Seek and you shall find")
+cavern.set_character(old_sage)
+
+amulet = Item("amulet")
+amulet.set_description("a glowing talisman with strange runes")
+crypt.set_item(amulet)
+
 harry = Enemy("Harry", "A smelly Wumpus")
 harry.set_conversation("Hangry…Hanggrry")
 harry.set_weakness("vegemite")
@@ -25,6 +45,11 @@ josephine = Friend("Josephine", "A friendly bat")
 josephine.set_conversation("Gidday")
 grotto.set_character(josephine)
 
+# Extension 2 - Method and Attribute:
+# Demonstrate new `hp` attribute and `adjust_hp()` method on a character.
+# We call `adjust_hp` on Josephine to show the attribute in use.
+josephine.adjust_hp(-10)
+
 vegemite = Item("vegemite")
 vegemite.set_description("a Wumpuses worst nightmare")
 grotto.set_item(vegemite)
@@ -32,6 +57,12 @@ grotto.set_item(vegemite)
 torch = Item("torch")
 torch.set_description("a light for the end of the tunnel")
 dungeon.set_item(torch)
+
+# Extension 3 - Inheritance:
+# Instantiate a `Weapon` (subclass of Item) that has damage and durability.
+sword = Weapon("sword", damage=8, durability=3)
+sword.set_description("a sturdy iron sword")
+cavern.set_item(sword)
 
 bag = []
 
@@ -101,6 +132,15 @@ while endGame == False:
                 inhabitant.pat()
         else:
             print("There is no one here to pat :(")
+
+    elif command == "interact":
+        # Extension 4 - Polymorphism:
+        # Calls `interact()` on the inhabitant. The method is defined on the
+        # superclass and overridden in `Enemy` and `Friend` to show polymorphism.
+        if inhabitant is not None:
+            inhabitant.interact()
+        else:
+            print("There is no one here to interact with")
 
     elif command == "take":
         if item is not None:
