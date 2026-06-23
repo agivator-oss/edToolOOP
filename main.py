@@ -1,5 +1,5 @@
 from cave import Cave
-from character import Enemy, Friend
+from character import Enemy, Friend, Player
 from item import Item, Weapon
 
 cavern = Cave("cavern")
@@ -23,7 +23,7 @@ crypt.set_description("An eerie crypt with moss-covered stones")
 grotto.link_cave(crypt, "south")
 crypt.link_cave(grotto, "north")
 
-goblin = Enemy("Goblin", "A small, sneaky cave goblin")
+goblin = Enemy("Goblin", "A small, sneaky cave goblin", hp=40, damage=12)
 goblin.set_conversation("Graaah! Leave my shiny!")
 goblin.set_weakness("sword")
 crypt.set_character(goblin)
@@ -36,7 +36,7 @@ amulet = Item("amulet")
 amulet.set_description("a glowing talisman with strange runes")
 crypt.set_item(amulet)
 
-harry = Enemy("Harry", "A smelly Wumpus")
+harry = Enemy("Harry", "A smelly Wumpus", hp=60, damage=15)
 harry.set_conversation("Hangry…Hanggrry")
 harry.set_weakness("vegemite")
 dungeon.set_character(harry)
@@ -64,21 +64,16 @@ sword = Weapon("sword", damage=8, durability=3)
 sword.set_description("a sturdy iron sword")
 cavern.set_item(sword)
 
-bag = []
+player = Player("Hero", hp=100)
+current_cave = cavern
+endGame = False
 
-# Method to see if an item name matches an item in the bag
-def in_bag(item_name):
-    for item in bag:
-        if item.get_name() == item_name:
-            return True
-        
-    return False
+print("Welcome to the RPG. Use commands: north, south, east, west, stats, bag, take, fight, interact, talk, pat")
 
-current_cave = cavern  
-endGame = False        
-while endGame == False:		
-    print("\n")         
+while endGame == False:
+    print("\n")
     current_cave.get_details()
+    print("Player HP: " + str(player.hp))
 
     inhabitant = current_cave.get_character()
     if inhabitant is not None:
@@ -90,39 +85,56 @@ while endGame == False:
 
     command = input("> ")
     if command in ["north", "south", "east", "west"]:
-        current_cave = current_cave.move(command)  
+        current_cave = current_cave.move(command)
 
-    elif command == "talk":
-        # Talk to the inhabitant - check whether there is one!
-        if inhabitant is not None:
-            inhabitant.talk()
+    elif command == "stats":
+        print("--- Player Stats ---")
+        print("Name: " + player.name)
+        print("HP: " + str(player.hp))
+        print("Enemies left: " + str(Enemy.enemies_to_defeat))
+
+    elif command == "bag":
+        player.list_bag()
+
+    elif command == "take":
+        if item is not None:
+            player.add_to_bag(item)
+            current_cave.set_item(None)
+        else:
+            print("There is nothing here to take.")
 
     elif command == "fight":
         if inhabitant is not None and isinstance(inhabitant, Enemy):
-            # Fight with the inhabitant, if there is one
             print("What will you fight with?")
             fight_with = input()
+            bag_item = player.get_bag_item(fight_with)
 
-            # Check the item is in the bag
-            if in_bag(fight_with):
-                if inhabitant.fight(fight_with) == True:
-                    # What happens if you win?
-                    print("Bravo,hero you won the fight!")
+            if bag_item is None:
+                print("You don't have a " + fight_with)
+            else:
+                result = inhabitant.fight(bag_item, player=player)
+                if result == True:
+                    print("Bravo, hero, you won the fight!")
                     current_cave.set_character(None)
-
                     if Enemy.enemies_to_defeat == 0:
                         print("Congratulations, you have survived another adventure!")
                         endGame = True
-
                 else:
-                    print("Scurry home, you lost the fight.")
-                    print("That's the end of the game")
-                    endGame = True
-            else:
-                print("You don't have a " + fight_with)
+                    if player.hp == 0:
+                        print("You have been defeated and your HP is 0.")
+                        print("Game Over")
+                        endGame = True
+                    else:
+                        print("You survived the fight but did not defeat " + inhabitant.name + ".")
 
         else:
             print("There is no one here to fight with")
+
+    elif command == "talk":
+        if inhabitant is not None:
+            inhabitant.talk()
+        else:
+            print("There is no one here to talk to")
 
     elif command == "pat":
         if inhabitant is not None:
@@ -135,21 +147,17 @@ while endGame == False:
 
     elif command == "interact":
         # Extension 4 - Polymorphism:
-        # Calls `interact()` on the inhabitant. The method is defined on the
-        # superclass and overridden in `Enemy` and `Friend` to show polymorphism.
+        # Calls `interact()` on the inhabitant.
         if inhabitant is not None:
             inhabitant.interact()
         else:
             print("There is no one here to interact with")
 
-    elif command == "take":
-        if item is not None:
-            print("You put the " + item.get_name() + " in your bag")
-            bag.append(item)
-            current_cave.set_item(None)
+    else:
+        print("I don't understand that command.")
 
-
-
-    
+    if player.hp == 0:
+        print("Your HP has reached 0. The adventure ends.")
+        endGame = True
 
 
